@@ -17,10 +17,6 @@ export default async function handler(req, res) {
     ? req.query.courses.split(",")
     : Object.keys(courses);
 
-  const names = typeof req.query.names === "string"
-    ? req.query.names.toLowerCase().split(",").map(x => x.trim())
-    : [];
-
   const results = [];
 
   for (const id of selected) {
@@ -30,16 +26,16 @@ export default async function handler(req, res) {
     const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" }
+      });
 
+      const data = await response.json();
       const players = data.reservationsGolfPlayers || [];
 
       for (const player of players) {
         const fullName = `${player.firstName || ""} ${player.familyName || ""}`.trim();
-
         if (!fullName || fullName.toLowerCase() === "varattu") continue;
-        if (names.length && !names.some(n => fullName.toLowerCase().includes(n))) continue;
 
         results.push({
           name: fullName,
