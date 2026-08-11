@@ -38,13 +38,8 @@ export default async function handler(req, res) {
       for (const player of players) {
         const fullName = `${player.firstName || ""} ${player.familyName || ""}`.trim();
 
-        if (!fullName || fullName.toLowerCase() === "varattu") {
-          continue;
-        }
-
-        if (names.length && !names.some(n => fullName.toLowerCase().includes(n))) {
-          continue;
-        }
+        if (!fullName || fullName.toLowerCase() === "varattu") continue;
+        if (names.length && !names.some(n => fullName.toLowerCase().includes(n))) continue;
 
         results.push({
           name: fullName,
@@ -56,7 +51,9 @@ export default async function handler(req, res) {
     } catch (error) {
       results.push({
         course: course.name,
-        error: error.message
+        url,
+        errorName: error.name,
+        errorMessage: error.message
       });
     }
   }
