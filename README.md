@@ -1,8 +1,13 @@
-# golf-friend-finder-backend
+# Golf Friend Finder Backend
 
-Backend service for Golf Friend Finder WiseGolf reservation search.
+## v0.0.2
 
-## v0.0.1
-First Vercel-to-WiseGolf connectivity test.
+Adds first reservation search endpoint.
 
-After deployment open `/api/test-wise`.
+Endpoint:
+`/api/search`
+
+Supports:
+- course selection
+- name filtering
+- formatted reservation results

@@ -1,0 +1,12 @@
+{
+  "gumbole": {
+    "name": "Gumböle Golf 18r",
+    "api": "https://api.espoogolf.fi",
+    "productId": 29
+  },
+  "hirvihaara": {
+    "name": "Hirvihaaran Golf 18r",
+    "api": "https://api.hirvihaaragolf.fi",
+    "productId": 7
+  }
+}
