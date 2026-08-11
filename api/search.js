@@ -27,30 +27,31 @@ export default async function handler(req, res) {
     const course = courses[id];
     if (!course) continue;
 
-    const url =
-      `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
+    const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
     try {
-      const response = await fetch(url, {
-        headers: { Accept: "application/json" }
-      });
-
+      const response = await fetch(url);
       const data = await response.json();
+
       const players = data.reservationsGolfPlayers || [];
 
       for (const player of players) {
-        const fullName =
-          `${player.firstName || ""} ${player.familyName || ""}`.trim();
+        const fullName = `${player.firstName || ""} ${player.familyName || ""}`.trim();
 
-        if (!names.length ||
-            names.some(name => fullName.toLowerCase().includes(name))) {
-          results.push({
-            name: fullName,
-            course: course.name,
-            date,
-            time: player.dateTimeStart || null
-          });
+        if (!fullName || fullName.toLowerCase() === "varattu") {
+          continue;
         }
+
+        if (names.length && !names.some(n => fullName.toLowerCase().includes(n))) {
+          continue;
+        }
+
+        results.push({
+          name: fullName,
+          course: course.name,
+          date,
+          time: player.dateTimeStart || null
+        });
       }
     } catch (error) {
       results.push({
