@@ -9,7 +9,7 @@ function loadCourses() {
 export default async function handler(req, res) {
   const date = typeof req.query.date === "string"
     ? req.query.date
-    : new Date().toISOString().slice(0, 10);
+    : "2026-08-11";
 
   const courses = loadCourses();
 
@@ -17,11 +17,7 @@ export default async function handler(req, res) {
     ? req.query.courses.split(",")
     : Object.keys(courses);
 
-  const names = typeof req.query.names === "string"
-    ? req.query.names.toLowerCase().split(",").map(x => x.trim())
-    : [];
-
-  const results = [];
+  const debug = [];
 
   for (const id of selected) {
     const course = courses[id];
@@ -38,42 +34,17 @@ export default async function handler(req, res) {
 
       const text = await response.text();
 
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        results.push({
-          course: course.name,
-          url,
-          error: "Invalid JSON response",
-          preview: text.slice(0, 200)
-        });
-        continue;
-      }
-
-      const players = data.reservationsGolfPlayers || [];
-
-      for (const player of players) {
-        const fullName = `${player.firstName || ""} ${player.familyName || ""}`.trim();
-
-        if (!fullName || fullName.toLowerCase() === "varattu") {
-          continue;
-        }
-
-        if (names.length && !names.some(n => fullName.toLowerCase().includes(n))) {
-          continue;
-        }
-
-        results.push({
-          name: fullName,
-          course: course.name,
-          date,
-          time: player.dateTimeStart || null
-        });
-      }
+      debug.push({
+        id,
+        course: course.name,
+        url,
+        status: response.status,
+        preview: text.slice(0, 200)
+      });
 
     } catch (error) {
-      results.push({
+      debug.push({
+        id,
         course: course.name,
         url,
         errorName: error.name,
@@ -85,7 +56,6 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     date,
-    count: results.length,
-    results
+    debug
   });
 }
