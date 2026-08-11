@@ -36,7 +36,21 @@ export default async function handler(req, res) {
         }
       });
 
-      const data = await response.json();
+      const text = await response.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        results.push({
+          course: course.name,
+          url,
+          error: "Invalid JSON response",
+          preview: text.slice(0, 200)
+        });
+        continue;
+      }
+
       const players = data.reservationsGolfPlayers || [];
 
       for (const player of players) {
@@ -57,6 +71,7 @@ export default async function handler(req, res) {
           time: player.dateTimeStart || null
         });
       }
+
     } catch (error) {
       results.push({
         course: course.name,
