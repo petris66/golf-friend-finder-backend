@@ -7,7 +7,7 @@ function loadCourses() {
   );
 }
 
-async function fetchCourse(course, date) {
+async function inspectCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
   try {
@@ -16,29 +16,57 @@ async function fetchCourse(course, date) {
     });
 
     const data = await response.json();
-    const players = data.reservationsGolfPlayers || [];
+    const players = Array.isArray(data.reservationsGolfPlayers)
+      ? data.reservationsGolfPlayers
+      : [];
 
-    return players
-      .filter(player => {
-        const family = (player.familyName || "").trim().toLowerCase();
-        return family && family !== "varattu";
-      })
-      .map(player => ({
-        firstName: player.firstName || "",
-        familyName: player.familyName || "",
-        name: `${player.firstName || ""} ${player.familyName || ""}`.trim(),
-        course: course.name,
-        date,
-        time: player.dateTimeStart || null,
-        club: player.clubName || null
+    const rowsWithFirstName = players.filter(
+      p => typeof p.firstName === "string" && p.firstName.trim() !== ""
+    ).length;
+
+    const rowsWithFamilyName = players.filter(
+      p => typeof p.familyName === "string" && p.familyName.trim() !== ""
+    ).length;
+
+    const rowsNotReserved = players.filter(
+      p => (p.familyName || "").trim().toLowerCase() !== "varattu"
+    ).length;
+
+    const namedSamples = players
+      .filter(p => (p.firstName || "").trim() !== "")
+      .slice(0, 10)
+      .map(p => ({
+        firstName: p.firstName ?? null,
+        familyName: p.familyName ?? null,
+        dateTimeStart: p.dateTimeStart ?? null,
+        clubName: p.clubName ?? null,
+        namePublic: p.namePublic ?? null
       }));
 
-  } catch (error) {
-    return [{
-      error: true,
+    return {
       course: course.name,
-      message: error.message
-    }];
+      status: response.status,
+      url,
+      totalFromAPI: players.length,
+      rowsWithFirstName,
+      rowsWithFamilyName,
+      rowsNotReserved,
+      first20: players.slice(0, 20).map(p => ({
+        firstName: p.firstName ?? null,
+        familyName: p.familyName ?? null,
+        dateTimeStart: p.dateTimeStart ?? null,
+        clubName: p.clubName ?? null,
+        namePublic: p.namePublic ?? null
+      })),
+      namedSamples
+    };
+  } catch (error) {
+    return {
+      course: course.name,
+      url,
+      errorName: error.name,
+      errorMessage: error.message
+    };
   }
 }
 
@@ -56,15 +84,13 @@ export default async function handler(req, res) {
   const results = await Promise.all(
     selected
       .filter(id => courses[id])
-      .map(id => fetchCourse(courses[id], date))
+      .map(id => inspectCourse(courses[id], date))
   );
-
-  const flat = results.flat();
 
   return res.status(200).json({
     ok: true,
+    version: "0.1.7",
     date,
-    count: flat.length,
-    results: flat
+    results
   });
 }
