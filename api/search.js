@@ -19,29 +19,19 @@ async function fetchCourse(course, date) {
     const players = data.reservationsGolfPlayers || [];
 
     return players
-      .map(player => {
-        const first = (player.firstName || "").trim();
-        const last = (player.familyName || "").trim();
-
-        return {
-          name: `${first} ${last}`.trim(),
-          course: course.name,
-          date,
-          time: player.dateTimeStart || null,
-          club: player.clubName || null
-        };
-      })
       .filter(player => {
-        if (!player.name) return false;
-
-        const lower = player.name.toLowerCase();
-
-        if (lower === "varattu") return false;
-        if (lower.includes("muu seura")) return false;
-        if (lower.includes("ei seuraa")) return false;
-
-        return true;
-      });
+        const family = (player.familyName || "").trim().toLowerCase();
+        return family && family !== "varattu";
+      })
+      .map(player => ({
+        firstName: player.firstName || "",
+        familyName: player.familyName || "",
+        name: `${player.firstName || ""} ${player.familyName || ""}`.trim(),
+        course: course.name,
+        date,
+        time: player.dateTimeStart || null,
+        club: player.clubName || null
+      }));
 
   } catch (error) {
     return [{
