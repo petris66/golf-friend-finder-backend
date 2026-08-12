@@ -6,7 +6,7 @@
   },
   "hirvihaara": {
     "name": "Hirvihaaran Golf 18r",
-    "api": "https://api.hirvihaaragolf.fi",
+    "api": "https://api.hirvihaarangolf.fi",
     "productId": 7
   }
 }
