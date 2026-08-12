@@ -16,18 +16,31 @@ async function fetchCourse(course, date) {
     });
 
     const data = await response.json();
+    const players = data.reservationsGolfPlayers || [];
 
-    return (data.reservationsGolfPlayers || [])
-      .map(player => ({
-        name: `${player.firstName || ""} ${player.familyName || ""}`.trim(),
-        course: course.name,
-        date,
-        time: player.dateTimeStart || null
-      }))
-      .filter(player =>
-        player.name &&
-        player.name.toLowerCase() !== "varattu"
-      );
+    return players
+      .map(player => {
+        const first = (player.firstName || "").trim();
+        const last = (player.familyName || "").trim();
+
+        return {
+          name: `${first} ${last}`.trim(),
+          course: course.name,
+          date,
+          time: player.dateTimeStart || null
+        };
+      })
+      .filter(player => {
+        if (!player.name) return false;
+
+        const lower = player.name.toLowerCase();
+
+        if (lower === "varattu") return false;
+        if (lower.includes("muu seura")) return false;
+        if (lower.includes("ei seuraa")) return false;
+
+        return true;
+      });
 
   } catch (error) {
     return [{
@@ -55,12 +68,10 @@ export default async function handler(req, res) {
       .map(id => fetchCourse(courses[id], date))
   );
 
-  const flatResults = results.flat();
-
   return res.status(200).json({
     ok: true,
     date,
-    count: flatResults.length,
-    results: flatResults
+    count: results.flat().length,
+    results: results.flat()
   });
 }
