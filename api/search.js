@@ -16,38 +16,21 @@ async function fetchCourse(course, date) {
     });
 
     const data = await response.json();
-    const players = data.reservationsGolfPlayers || [];
 
-    return players
-      .map(player => {
-        const first = (player.firstName || "").trim();
-        const last = (player.familyName || "").trim();
-
-        return {
-          name: `${first} ${last}`.trim(),
-          course: course.name,
-          date,
-          time: player.dateTimeStart || null
-        };
-      })
-      .filter(player => {
-        if (!player.name) return false;
-
-        const lower = player.name.toLowerCase();
-
-        if (lower === "varattu") return false;
-        if (lower.includes("muu seura")) return false;
-        if (lower.includes("ei seuraa")) return false;
-
-        return true;
-      });
+    return {
+      course: course.name,
+      status: response.status,
+      count: (data.reservationsGolfPlayers || []).length,
+      sample: (data.reservationsGolfPlayers || []).slice(0, 5)
+    };
 
   } catch (error) {
-    return [{
-      error: true,
+    return {
       course: course.name,
-      message: error.message
-    }];
+      url,
+      errorName: error.name,
+      errorMessage: error.message
+    };
   }
 }
 
@@ -71,7 +54,6 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     date,
-    count: results.flat().length,
-    results: results.flat()
+    results
   });
 }
