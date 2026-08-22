@@ -7,39 +7,45 @@ function loadCourses() {
   );
 }
 
-async function inspectCourse(course, date) {
+async function fetchCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" }
-  });
-
-  const data = await response.json();
-
-  const players = Array.isArray(data.reservationsGolfPlayers)
-    ? data.reservationsGolfPlayers
-    : [];
-
-  const namedPlayers = players.filter(p => {
-    const first = (p.firstName || "").trim();
-    const family = (p.familyName || "").trim();
-
-    return first.length > 0 && family.toLowerCase() !== "varattu";
-  });
-
-  return {
-    course: course.name,
-    status: response.status,
-    totalPlayers: players.length,
-    namedPlayersCount: namedPlayers.length,
-    namedPlayers: namedPlayers.map(p => ({
-      firstName: p.firstName,
-      familyName: p.familyName,
-      dateTimeStart: p.dateTimeStart,
-      personId: p.personId,
-      reservationTimeId: p.reservationTimeId
-    }))
+  const headers = {
+    Accept: "application/json"
   };
+
+  if (process.env.WISEGOLF_TOKEN) {
+    headers.Authorization = process.env.WISEGOLF_TOKEN.startsWith("Bearer ")
+      ? process.env.WISEGOLF_TOKEN
+      : `Bearer ${process.env.WISEGOLF_TOKEN}`;
+  }
+
+  try {
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+
+    const players = Array.isArray(data.reservationsGolfPlayers)
+      ? data.reservationsGolfPlayers
+      : [];
+
+    const namedPlayers = players.filter(p => {
+      const first = (p.firstName || "").trim();
+      const last = (p.familyName || p.lastName || "").trim();
+      return first.length > 0 && last.toLowerCase() !== "varattu";
+    });
+
+    return {
+      course: course.name,
+      status: response.status,
+      players: namedPlayers
+    };
+
+  } catch (error) {
+    return {
+      course: course.name,
+      error: error.message
+    };
+  }
 }
 
 export default async function handler(req, res) {
@@ -53,12 +59,12 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => inspectCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.3.3-debug",
+    version: "0.4.0",
     date,
     results
   });
