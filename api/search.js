@@ -7,42 +7,40 @@ function loadCourses() {
   );
 }
 
-async function debugCourse(course, date) {
+async function inspectCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
-  try {
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" }
-    });
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" }
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    return {
-      course: course.name,
-      status: response.status,
-      topLevelKeys: Object.keys(data),
-      counts: {
-        reservationsGolfPlayers: Array.isArray(data.reservationsGolfPlayers)
-          ? data.reservationsGolfPlayers.length
-          : null,
-        rows: Array.isArray(data.rows)
-          ? data.rows.length
-          : null,
-        reservations: Array.isArray(data.reservations)
-          ? data.reservations.length
-          : null
-      },
-      playerSamples: Array.isArray(data.reservationsGolfPlayers)
-        ? data.reservationsGolfPlayers.slice(0,3)
-        : [],
-      rowSamples: Array.isArray(data.rows)
-        ? data.rows.slice(0,3)
-        : []
-    };
+  const players = Array.isArray(data.reservationsGolfPlayers)
+    ? data.reservationsGolfPlayers
+    : [];
 
-  } catch (e) {
-    return { course: course.name, error: e.message };
-  }
+  const namedPlayers = players.filter(p => {
+    const first = (p.firstName || "").trim();
+    const family = (p.familyName || "").trim();
+
+    return first.length > 0 ||
+      (family.length > 0 && family.toLowerCase() !== "varattu");
+  });
+
+  return {
+    course: course.name,
+    status: response.status,
+    totalPlayers: players.length,
+    namedPlayersCount: namedPlayers.length,
+    namedPlayers: namedPlayers.map(p => ({
+      firstName: p.firstName || "",
+      familyName: p.familyName || "",
+      dateTimeStart: p.dateTimeStart || null,
+      clubName: p.clubName || null,
+      playerId: p.playerId || null
+    }))
+  };
 }
 
 export default async function handler(req, res) {
@@ -56,12 +54,12 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => debugCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => inspectCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.2.1-debug",
+    version: "0.2.2-debug",
     date,
     results
   });
