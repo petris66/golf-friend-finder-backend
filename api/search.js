@@ -15,9 +15,7 @@ async function fetchCourse(course, date) {
   };
 
   if (process.env.WISEGOLF_TOKEN) {
-    headers.Authorization = process.env.WISEGOLF_TOKEN.startsWith("Bearer ")
-      ? process.env.WISEGOLF_TOKEN
-      : `Bearer ${process.env.WISEGOLF_TOKEN}`;
+    headers.Authorization = process.env.WISEGOLF_TOKEN;
   }
 
   try {
@@ -30,7 +28,8 @@ async function fetchCourse(course, date) {
 
     const namedPlayers = players.filter(p => {
       const first = (p.firstName || "").trim();
-      const last = (p.familyName || p.lastName || "").trim();
+      const last = (p.familyName || "").trim();
+
       return first.length > 0 && last.toLowerCase() !== "varattu";
     });
 
@@ -39,7 +38,6 @@ async function fetchCourse(course, date) {
       status: response.status,
       players: namedPlayers
     };
-
   } catch (error) {
     return {
       course: course.name,
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
 
   res.status(200).json({
     ok: true,
-    version: "0.4.0",
+    version: "0.4.1",
     date,
     results
   });
