@@ -7,37 +7,48 @@ function loadCourses() {
   );
 }
 
-async function inspectCourse(course, date) {
+async function fetchCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" }
-  });
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  const resources = Array.isArray(data.reservationsAdditionalResources)
-    ? data.reservationsAdditionalResources
-    : [];
+    const players = Array.isArray(data.reservationsGolfPlayers)
+      ? data.reservationsGolfPlayers
+      : [];
 
-  return {
-    course: course.name,
-    status: response.status,
-    topLevelKeys: Object.keys(data),
-    counts: {
-      reservationsGolfPlayers: Array.isArray(data.reservationsGolfPlayers)
-        ? data.reservationsGolfPlayers.length
-        : null,
-      reservationsAdditionalResources: resources.length,
-      rows: Array.isArray(data.rows)
-        ? data.rows.length
-        : null
-    },
-    resourceKeys: resources.length > 0
-      ? Object.keys(resources[0])
-      : [],
-    resourceSamples: resources.slice(0,5)
-  };
+    const namedPlayers = players
+      .filter(p => {
+        const first = (p.firstName || "").trim();
+        const last = (p.familyName || "").trim();
+
+        return first.length > 0 && last.length > 0 && last.toLowerCase() !== "varattu";
+      })
+      .map(p => ({
+        firstName: p.firstName,
+        familyName: p.familyName,
+        name: `${p.firstName} ${p.familyName}`,
+        dateTimeStart: p.dateTimeStart || null,
+        clubName: p.clubName || null,
+        playerId: p.playerId || null
+      }));
+
+    return {
+      course: course.name,
+      status: response.status,
+      players: namedPlayers
+    };
+
+  } catch (error) {
+    return {
+      course: course.name,
+      error: error.message
+    };
+  }
 }
 
 export default async function handler(req, res) {
@@ -51,12 +62,14 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => inspectCourse(courses[id], date))
+    selected
+      .filter(id => courses[id])
+      .map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.2.3-debug",
+    version: "0.3.0",
     date,
     results
   });
