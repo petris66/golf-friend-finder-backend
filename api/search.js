@@ -16,30 +16,27 @@ async function inspectCourse(course, date) {
 
   const data = await response.json();
 
-  const players = Array.isArray(data.reservationsGolfPlayers)
-    ? data.reservationsGolfPlayers
+  const resources = Array.isArray(data.reservationsAdditionalResources)
+    ? data.reservationsAdditionalResources
     : [];
-
-  const namedPlayers = players.filter(p => {
-    const first = (p.firstName || "").trim();
-    const family = (p.familyName || "").trim();
-
-    return first.length > 0 ||
-      (family.length > 0 && family.toLowerCase() !== "varattu");
-  });
 
   return {
     course: course.name,
     status: response.status,
-    totalPlayers: players.length,
-    namedPlayersCount: namedPlayers.length,
-    namedPlayers: namedPlayers.map(p => ({
-      firstName: p.firstName || "",
-      familyName: p.familyName || "",
-      dateTimeStart: p.dateTimeStart || null,
-      clubName: p.clubName || null,
-      playerId: p.playerId || null
-    }))
+    topLevelKeys: Object.keys(data),
+    counts: {
+      reservationsGolfPlayers: Array.isArray(data.reservationsGolfPlayers)
+        ? data.reservationsGolfPlayers.length
+        : null,
+      reservationsAdditionalResources: resources.length,
+      rows: Array.isArray(data.rows)
+        ? data.rows.length
+        : null
+    },
+    resourceKeys: resources.length > 0
+      ? Object.keys(resources[0])
+      : [],
+    resourceSamples: resources.slice(0,5)
   };
 }
 
@@ -59,7 +56,7 @@ export default async function handler(req, res) {
 
   res.status(200).json({
     ok: true,
-    version: "0.2.2-debug",
+    version: "0.2.3-debug",
     date,
     results
   });
