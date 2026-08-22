@@ -1,132 +1,132 @@
 {
   "helsinki": {
     "name": "Helsingin Golfklubi 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "kullo": {
     "name": "Kullo Golf Club 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "lahti": {
     "name": "Lahden Golf 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "egs": {
     "name": "Espoo Golfseura (EGS) 18r",
-    "domain": "api.espoogolf.fi",
-    "productId": "28"
+    "productId": "28",
+    "api": "https://api.espoogolf.fi"
   },
   "pirkkala": {
     "name": "Golf Pirkkala 18r",
-    "domain": "api.golfpirkkala.fi",
-    "productId": "42"
+    "productId": "42",
+    "api": "https://api.golfpirkkala.fi"
   },
   "talma": {
     "name": "Golf Talma 18r",
-    "domain": "api.golftalma.fi",
-    "productId": "70"
+    "productId": "70",
+    "api": "https://api.golftalma.fi"
   },
   "gumbole": {
     "name": "Gumböle Golf 18r",
-    "domain": "api.espoogolf.fi",
-    "productId": "29"
+    "productId": "29",
+    "api": "https://api.espoogolf.fi"
   },
   "hirvihaara": {
     "name": "Hirvihaaran Golf 18r",
-    "domain": "api.hirvihaarangolf.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.hirvihaarangolf.fi"
   },
   "hyvinkaa": {
     "name": "Hyvinkää Golf 18r",
-    "domain": "api.hyvigolf.fi",
-    "productId": "413"
+    "productId": "413",
+    "api": "https://api.hyvigolf.fi"
   },
   "keimola": {
     "name": "Keimola Golf 18r",
-    "domain": "api.keimolagolf.com",
-    "productId": "166"
+    "productId": "166",
+    "api": "https://api.keimolagolf.com"
   },
   "koto": {
     "name": "Koto Golf 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "kytaja_nw": {
     "name": "Kytäjä Golf – North West (NW)",
-    "domain": "api.kytajagolf.fi",
-    "productId": "22"
+    "productId": "22",
+    "api": "https://api.kytajagolf.fi"
   },
   "kytaja_se": {
     "name": "Kytäjä Golf – South East (SE)",
-    "domain": "api.kytajagolf.fi",
-    "productId": "70"
+    "productId": "70",
+    "api": "https://api.kytajagolf.fi"
   },
   "peurunka": {
     "name": "Laukaa Peurunkagolf 18r",
-    "domain": "api.lpg.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.lpg.fi"
   },
   "meriteijo": {
     "name": "Meri-Teijo Golf 18r",
-    "domain": "api.meriteijogolf.com",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.meriteijogolf.com"
   },
   "nurmijarvi": {
     "name": "Nurmijärvi Golf 18r",
-    "domain": "api.nurmijarvigolf.fi",
-    "productId": "1523"
+    "productId": "1523",
+    "api": "https://api.nurmijarvigolf.fi"
   },
   "porvoo": {
     "name": "Porvoo Golf 18r",
-    "domain": "api.porvoogolf.fi",
-    "productId": "17"
+    "productId": "17",
+    "api": "https://api.porvoogolf.fi"
   },
   "ruukki": {
     "name": "Ruukkigolf 18r",
-    "domain": "api.ruukkigolf.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.ruukkigolf.fi"
   },
   "seagolf": {
     "name": "Sea Golf Rönnäs 18r",
-    "domain": "api.seagolf.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.seagolf.fi"
   },
   "shg_luukki": {
     "name": "SHG – Luukki 18r",
-    "domain": "api.shg.fi",
-    "productId": "53"
+    "productId": "53",
+    "api": "https://api.shg.fi"
   },
   "stlg_kalkki": {
     "name": "St. Laurence Golf – Kalkki-Petteri",
-    "domain": "api.stlg.fi",
-    "productId": "8"
+    "productId": "8",
+    "api": "https://api.stlg.fi"
   },
   "stlg_pyha": {
     "name": "St. Laurence Golf – Pyhä Lauri",
-    "domain": "api.stlg.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.stlg.fi"
   },
   "tuusula": {
     "name": "Tuusulan Golfklubi 18r",
-    "domain": "api.tgk.fi",
-    "productId": "108"
+    "productId": "108",
+    "api": "https://api.tgk.fi"
   },
   "hill_side": {
     "name": "Hill Side Golf 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "kurk": {
     "name": "Kurk Golf 18r",
-    "domain": "",
-    "productId": ""
+    "productId": "",
+    "api": ""
   },
   "nevas": {
     "name": "Nevas Golf 18r",
-    "domain": "api.nevasgolf.fi",
-    "productId": "7"
+    "productId": "7",
+    "api": "https://api.nevasgolf.fi"
   }
 }
