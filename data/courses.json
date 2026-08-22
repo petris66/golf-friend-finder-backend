@@ -8,5 +8,25 @@
     "name": "Hirvihaaran Golf 18r",
     "api": "https://api.hirvihaarangolf.fi",
     "productId": 7
+  },
+  "hyvinkaa": {
+    "name": "Hyvinkää Golf 18r",
+    "api": "https://api.hyvigolf.fi",
+    "productId": 413
+  },
+  "nurmijarvi": {
+    "name": "Nurmijärvi Golf",
+    "api": "https://api.nurmijarvigolf.fi",
+    "productId": 1523
+  },
+  "ringside": {
+    "name": "Ringside Golf",
+    "api": "https://api.ringsidegolf.fi",
+    "productId": 17
+  },
+  "egs": {
+    "name": "Espoon Golfseura",
+    "api": "https://api.espoogolf.fi",
+    "productId": 28
   }
 }
