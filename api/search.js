@@ -20,12 +20,25 @@ async function inspectCourse(course, date) {
     ? data.reservationsGolfPlayers
     : [];
 
+  const namedPlayers = players.filter(p => {
+    const first = (p.firstName || "").trim();
+    const family = (p.familyName || "").trim();
+
+    return first.length > 0 && family.toLowerCase() !== "varattu";
+  });
+
   return {
     course: course.name,
     status: response.status,
     totalPlayers: players.length,
-    playerKeys: players.length ? Object.keys(players[0]) : [],
-    firstPlayers: players.slice(0, 5)
+    namedPlayersCount: namedPlayers.length,
+    namedPlayers: namedPlayers.map(p => ({
+      firstName: p.firstName,
+      familyName: p.familyName,
+      dateTimeStart: p.dateTimeStart,
+      personId: p.personId,
+      reservationTimeId: p.reservationTimeId
+    }))
   };
 }
 
@@ -45,7 +58,7 @@ export default async function handler(req, res) {
 
   res.status(200).json({
     ok: true,
-    version: "0.3.2-debug",
+    version: "0.3.3-debug",
     date,
     results
   });
