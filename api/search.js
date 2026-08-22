@@ -8,7 +8,9 @@ function loadCourses() {
 }
 
 async function fetchCourse(course, date) {
-  const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
+  const base = `${course.api}/api/1.0/`;
+  const pid = encodeURIComponent(course.productId);
+  const day = encodeURIComponent(date);
 
   const headers = {
     Accept: "application/json"
@@ -18,9 +20,32 @@ async function fetchCourse(course, date) {
     headers.Authorization = process.env.WISEGOLF_TOKEN;
   }
 
+  async function get(endpoint) {
+    const response = await fetch(`${base}${endpoint}`, {
+      cache: "no-store",
+      headers
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return {};
+    }
+  }
+
   try {
-    const response = await fetch(url, { headers });
-    const data = await response.json();
+    await get(`reservations/initialization/?productid=${pid}`);
+    await get(`reservations/calendarsettings/?productid=${pid}&date=${day}`);
+
+    const data = await get(
+      `reservations/?productid=${pid}&date=${day}&golf=1`
+    );
 
     const players = Array.isArray(data.reservationsGolfPlayers)
       ? data.reservationsGolfPlayers
@@ -35,9 +60,10 @@ async function fetchCourse(course, date) {
 
     return {
       course: course.name,
-      status: response.status,
+      status: 200,
       players: namedPlayers
     };
+
   } catch (error) {
     return {
       course: course.name,
@@ -57,12 +83,14 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
+    selected
+      .filter(id => courses[id])
+      .map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.4.1",
+    version: "0.4.2",
     date,
     results
   });
