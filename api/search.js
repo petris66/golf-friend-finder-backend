@@ -24,18 +24,24 @@ async function fetchCourse(course, date) {
     const namedPlayers = players
       .filter(p => {
         const first = (p.firstName || "").trim();
-        const last = (p.familyName || "").trim();
+        const last = (p.lastName || p.familyName || "").trim();
 
-        return first.length > 0 && last.length > 0 && last.toLowerCase() !== "varattu";
+        return first.length > 0 &&
+          last.length > 0 &&
+          last.toLowerCase() !== "varattu";
       })
-      .map(p => ({
-        firstName: p.firstName,
-        familyName: p.familyName,
-        name: `${p.firstName} ${p.familyName}`,
-        dateTimeStart: p.dateTimeStart || null,
-        clubName: p.clubName || null,
-        playerId: p.playerId || null
-      }));
+      .map(p => {
+        const last = p.lastName || p.familyName || "";
+
+        return {
+          firstName: p.firstName || "",
+          lastName: last,
+          name: `${p.firstName || ""} ${last}`.trim(),
+          dateTimeStart: p.dateTimeStart || null,
+          clubName: p.clubName || null,
+          playerId: p.playerId || null
+        };
+      });
 
     return {
       course: course.name,
@@ -62,14 +68,12 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected
-      .filter(id => courses[id])
-      .map(id => fetchCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.3.0",
+    version: "0.3.1",
     date,
     results
   });
