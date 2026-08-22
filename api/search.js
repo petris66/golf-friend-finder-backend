@@ -7,32 +7,47 @@ function loadCourses() {
   );
 }
 
-async function getRaw(course, date) {
+async function fetchCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
   try {
-    const r = await fetch(url, { headers: { Accept: "application/json" } });
-    const data = await r.json();
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
+
+    const data = await response.json();
+
+    const players = Array.isArray(data.reservationsGolfPlayers)
+      ? data.reservationsGolfPlayers
+      : [];
+
+    const namedPlayers = players.filter(p => {
+      const first = (p.firstName || "").trim();
+      const family = (p.familyName || "").trim();
+
+      return (
+        first.length > 0 ||
+        (family.length > 0 && family.toLowerCase() !== "varattu")
+      );
+    });
 
     return {
       course: course.name,
-      status: r.status,
-      url,
-      topLevelKeys: Object.keys(data),
-      sampleKeys: data.reservationsGolfPlayers && data.reservationsGolfPlayers[0]
-        ? Object.keys(data.reservationsGolfPlayers[0])
-        : [],
-      sampleRows: data.reservationsGolfPlayers
-        ? data.reservationsGolfPlayers.slice(0, 5)
-        : [],
-      rawCounts: {
-        reservationsGolfPlayers: Array.isArray(data.reservationsGolfPlayers)
-          ? data.reservationsGolfPlayers.length
-          : null
-      }
+      status: response.status,
+      players: namedPlayers.map(p => ({
+        firstName: p.firstName || "",
+        familyName: p.familyName || "",
+        dateTimeStart: p.dateTimeStart || null,
+        clubName: p.clubName || null,
+        playerId: p.playerId || null
+      }))
     };
-  } catch (e) {
-    return { course: course.name, error: e.message };
+
+  } catch (error) {
+    return {
+      course: course.name,
+      error: error.message
+    };
   }
 }
 
@@ -45,17 +60,20 @@ export default async function handler(req, res) {
 
   const date = req.query.date || new Date().toISOString().slice(0,10);
   const courses = loadCourses();
+
   const selected = typeof req.query.courses === "string"
     ? req.query.courses.split(",").filter(Boolean)
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => getRaw(courses[id], date))
+    selected
+      .filter(id => courses[id])
+      .map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.1.9-debug",
+    version: "0.2.0",
     date,
     results
   });
