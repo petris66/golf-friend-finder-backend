@@ -7,89 +7,55 @@ function loadCourses() {
   );
 }
 
-async function inspectCourse(course, date) {
+async function getRaw(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
   try {
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" }
-    });
-
-    const data = await response.json();
-    const players = Array.isArray(data.reservationsGolfPlayers)
-      ? data.reservationsGolfPlayers
-      : [];
-
-    const rowsWithFirstName = players.filter(
-      p => typeof p.firstName === "string" && p.firstName.trim() !== ""
-    ).length;
-
-    const rowsWithFamilyName = players.filter(
-      p => typeof p.familyName === "string" && p.familyName.trim() !== ""
-    ).length;
-
-    const rowsNotReserved = players.filter(
-      p => (p.familyName || "").trim().toLowerCase() !== "varattu"
-    ).length;
-
-    const namedSamples = players
-      .filter(p => (p.firstName || "").trim() !== "")
-      .slice(0, 10)
-      .map(p => ({
-        firstName: p.firstName ?? null,
-        familyName: p.familyName ?? null,
-        dateTimeStart: p.dateTimeStart ?? null,
-        clubName: p.clubName ?? null,
-        namePublic: p.namePublic ?? null
-      }));
+    const r = await fetch(url, { headers: { Accept: "application/json" } });
+    const data = await r.json();
 
     return {
       course: course.name,
-      status: response.status,
+      status: r.status,
       url,
-      totalFromAPI: players.length,
-      rowsWithFirstName,
-      rowsWithFamilyName,
-      rowsNotReserved,
-      first20: players.slice(0, 20).map(p => ({
-        firstName: p.firstName ?? null,
-        familyName: p.familyName ?? null,
-        dateTimeStart: p.dateTimeStart ?? null,
-        clubName: p.clubName ?? null,
-        namePublic: p.namePublic ?? null
-      })),
-      namedSamples
+      topLevelKeys: Object.keys(data),
+      sampleKeys: data.reservationsGolfPlayers && data.reservationsGolfPlayers[0]
+        ? Object.keys(data.reservationsGolfPlayers[0])
+        : [],
+      sampleRows: data.reservationsGolfPlayers
+        ? data.reservationsGolfPlayers.slice(0, 5)
+        : [],
+      rawCounts: {
+        reservationsGolfPlayers: Array.isArray(data.reservationsGolfPlayers)
+          ? data.reservationsGolfPlayers.length
+          : null
+      }
     };
-  } catch (error) {
-    return {
-      course: course.name,
-      url,
-      errorName: error.name,
-      errorMessage: error.message
-    };
+  } catch (e) {
+    return { course: course.name, error: e.message };
   }
 }
 
 export default async function handler(req, res) {
-  const date = typeof req.query.date === "string"
-    ? req.query.date
-    : new Date().toISOString().slice(0, 10);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  if (req.method === "OPTIONS") return res.status(200).end();
+
+  const date = req.query.date || new Date().toISOString().slice(0,10);
   const courses = loadCourses();
-
   const selected = typeof req.query.courses === "string"
-    ? req.query.courses.split(",").map(x => x.trim()).filter(Boolean)
+    ? req.query.courses.split(",").filter(Boolean)
     : [];
 
   const results = await Promise.all(
-    selected
-      .filter(id => courses[id])
-      .map(id => inspectCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => getRaw(courses[id], date))
   );
 
-  return res.status(200).json({
+  res.status(200).json({
     ok: true,
-    version: "0.1.7",
+    version: "0.1.9-debug",
     date,
     results
   });
