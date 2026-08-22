@@ -7,54 +7,26 @@ function loadCourses() {
   );
 }
 
-async function fetchCourse(course, date) {
+async function inspectCourse(course, date) {
   const url = `${course.api}/api/1.0/reservations/?productid=${course.productId}&date=${date}&golf=1`;
 
-  try {
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" }
-    });
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" }
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    const players = Array.isArray(data.reservationsGolfPlayers)
-      ? data.reservationsGolfPlayers
-      : [];
+  const players = Array.isArray(data.reservationsGolfPlayers)
+    ? data.reservationsGolfPlayers
+    : [];
 
-    const namedPlayers = players
-      .filter(p => {
-        const first = (p.firstName || "").trim();
-        const last = (p.lastName || p.familyName || "").trim();
-
-        return first.length > 0 &&
-          last.length > 0 &&
-          last.toLowerCase() !== "varattu";
-      })
-      .map(p => {
-        const last = p.lastName || p.familyName || "";
-
-        return {
-          firstName: p.firstName || "",
-          lastName: last,
-          name: `${p.firstName || ""} ${last}`.trim(),
-          dateTimeStart: p.dateTimeStart || null,
-          clubName: p.clubName || null,
-          playerId: p.playerId || null
-        };
-      });
-
-    return {
-      course: course.name,
-      status: response.status,
-      players: namedPlayers
-    };
-
-  } catch (error) {
-    return {
-      course: course.name,
-      error: error.message
-    };
-  }
+  return {
+    course: course.name,
+    status: response.status,
+    totalPlayers: players.length,
+    playerKeys: players.length ? Object.keys(players[0]) : [],
+    firstPlayers: players.slice(0, 5)
+  };
 }
 
 export default async function handler(req, res) {
@@ -68,12 +40,12 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => inspectCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.3.1",
+    version: "0.3.2-debug",
     date,
     results
   });
