@@ -13,7 +13,8 @@ async function fetchCourse(course, date) {
   const day = encodeURIComponent(date);
 
   const headers = {
-    Accept: "application/json"
+    Accept: "application/json",
+    "X-Session-Type": "wisegolf"
   };
 
   if (process.env.WISEGOLF_TOKEN) {
@@ -54,7 +55,6 @@ async function fetchCourse(course, date) {
     const namedPlayers = players.filter(p => {
       const first = (p.firstName || "").trim();
       const last = (p.familyName || "").trim();
-
       return first.length > 0 && last.toLowerCase() !== "varattu";
     });
 
@@ -63,7 +63,6 @@ async function fetchCourse(course, date) {
       status: 200,
       players: namedPlayers
     };
-
   } catch (error) {
     return {
       course: course.name,
@@ -83,14 +82,12 @@ export default async function handler(req, res) {
     : [];
 
   const results = await Promise.all(
-    selected
-      .filter(id => courses[id])
-      .map(id => fetchCourse(courses[id], date))
+    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
   );
 
   res.status(200).json({
     ok: true,
-    version: "0.4.2",
+    version: "0.4.3",
     date,
     results
   });
