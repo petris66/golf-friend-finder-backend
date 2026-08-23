@@ -7,6 +7,8 @@ function loadCourses() {
   );
 }
 
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 async function fetchCourse(course, date) {
   const base = `${course.api}/api/1.0/`;
   const pid = encodeURIComponent(course.productId);
@@ -52,17 +54,16 @@ async function fetchCourse(course, date) {
       ? data.reservationsGolfPlayers
       : [];
 
-    const namedPlayers = players.filter(p => {
-      const first = (p.firstName || "").trim();
-      const last = (p.familyName || "").trim();
-      return first.length > 0 && last.toLowerCase() !== "varattu";
-    });
-
     return {
       course: course.name,
       status: 200,
-      players: namedPlayers
+      players: players.filter(p => {
+        const first = (p.firstName || "").trim();
+        const last = (p.familyName || "").trim();
+        return first.length > 0 && last.toLowerCase() !== "varattu";
+      })
     };
+
   } catch (error) {
     return {
       course: course.name,
@@ -81,13 +82,18 @@ export default async function handler(req, res) {
     ? req.query.courses.split(",").filter(Boolean)
     : [];
 
-  const results = await Promise.all(
-    selected.filter(id => courses[id]).map(id => fetchCourse(courses[id], date))
-  );
+  const results = [];
+
+  for (const id of selected) {
+    if (courses[id]) {
+      results.push(await fetchCourse(courses[id], date));
+      await wait(700);
+    }
+  }
 
   res.status(200).json({
     ok: true,
-    version: "0.4.3",
+    version: "0.4.4",
     date,
     results
   });
