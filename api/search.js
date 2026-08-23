@@ -60,6 +60,15 @@ async function fetchCourse(course, date) {
       players: players.filter(p => {
         const first = (p.firstName || "").trim();
         const last = (p.familyName || "").trim();
+
+        // SHG uses the same productId for Luukki and Lakisto.
+        // Keep only Luukki players when SHG Luukki is selected.
+        if (course.api === "https://api.shg.fi") {
+          return first.length > 0 &&
+            last.toLowerCase() !== "varattu" &&
+            String(p.resourceId || "") === "1";
+        }
+
         return first.length > 0 && last.toLowerCase() !== "varattu";
       })
     };
@@ -93,7 +102,7 @@ export default async function handler(req, res) {
 
   res.status(200).json({
     ok: true,
-    version: "0.4.4",
+    version: "0.4.5",
     date,
     results
   });
