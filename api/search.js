@@ -57,13 +57,27 @@ async function fetchCourse(course, date) {
     return {
       course: course.name,
       status: 200,
-      players: players.filter(p => {
-        const first = (p.firstName || "").trim();
-        const last = (p.familyName || "").trim();
+      players: players
+        .filter(p => {
+          const first = (p.firstName || "").trim();
+          const last = (p.familyName || "").trim();
 
-        return first.length > 0 &&
-          last.toLowerCase() !== "varattu";
-      })
+          return first.length > 0 &&
+            last.toLowerCase() !== "varattu";
+        })
+        .map(p => {
+          if (course.api === "https://api.shg.fi") {
+            return {
+              ...p,
+              course: String(p.resourceId || "") === "2"
+                ? "SHG – Lakisto 18r"
+                : String(p.resourceId || "") === "1"
+                  ? "SHG – Luukki 18r"
+                  : "SHG 18r"
+            };
+          }
+          return p;
+        })
     };
 
   } catch (error) {

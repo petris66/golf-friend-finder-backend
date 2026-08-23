@@ -94,11 +94,6 @@
     "productId": "7",
     "api": "https://api.seagolf.fi"
   },
-  "shg_luukki": {
-    "name": "SHG – Luukki 18r",
-    "productId": "53",
-    "api": "https://api.shg.fi"
-  },
   "stlg_kalkki": {
     "name": "St. Laurence Golf – Kalkki-Petteri",
     "productId": "8",
@@ -128,5 +123,10 @@
     "name": "Nevas Golf 18r",
     "productId": "7",
     "api": "https://api.nevasgolf.fi"
+  },
+  "shg": {
+    "name": "SHG 18r",
+    "productId": "53",
+    "api": "https://api.shg.fi"
   }
 }
