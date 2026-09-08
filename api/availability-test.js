@@ -64,14 +64,25 @@ export default async function handler(req, res) {
     const endTime = String(settings.endTime || "21:00:00").slice(0, 5);
     const duration = Number(settings.duration) || 10;
 
-    const players = Array.isArray(reservations?.reservationsGolfPlayers)
-      ? reservations.reservationsGolfPlayers
-      : [];
+    const rows = Array.isArray(reservations?.rows) ? reservations.rows : [];
 
+    // WiseGolf rows represent occupied/blocked capacity for the tee time.
+    // Count only normal golf reservation rows (res_golf) for the course resource.
     const occupied = new Map();
-    for (const p of players) {
-      const t = hhmm(p.dateTimeStart);
-      if (t) occupied.set(t, (occupied.get(t) || 0) + 1);
+    for (const row of rows) {
+      if (row?.label !== "res_golf") continue;
+
+      const resources = Array.isArray(row?.resources) ? row.resources : [];
+      const belongsToCourse = resources.some(
+        r => String(r?.resourceId) === "1"
+      );
+      if (!belongsToCourse) continue;
+
+      const t = hhmm(row.start);
+      if (!t) continue;
+
+      const qty = Math.max(1, Number(row.quantity) || 1);
+      occupied.set(t, (occupied.get(t) || 0) + qty);
     }
 
     const [sh, sm] = startTime.split(":").map(Number);
@@ -84,7 +95,7 @@ export default async function handler(req, res) {
       const h = String(Math.floor(minute / 60)).padStart(2, "0");
       const m = String(minute % 60).padStart(2, "0");
       const time = `${h}:${m}`;
-      const used = occupied.get(time) || 0;
+      const used = Math.min(4, occupied.get(time) || 0);
       const free = Math.max(0, 4 - used);
 
       if (time >= from && time <= to && free >= playersNeeded) {
@@ -95,7 +106,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      test: "availability-v1",
+      test: "availability-rows-v2",
       courseId,
       course: course.name,
       date,
