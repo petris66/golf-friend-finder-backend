@@ -66,15 +66,29 @@ export default async function handler(req, res) {
 
     const rows = Array.isArray(reservations?.rows) ? reservations.rows : [];
 
+    // Detect the actual 18-hole golf resource from WiseGolf calendar settings.
+    // This avoids course-specific resourceId hardcoding (e.g. Hyvinkää=1, Gumböle=3).
+    const calendarResources = Array.isArray(settings.resources) ? settings.resources : [];
+    const golfResource = calendarResources.find(
+      r => String(r?.resourceCategory || "").toLowerCase() === "golf18"
+    );
+
+    if (!golfResource) {
+      throw new Error("Golf18 resource not found in calendar settings");
+    }
+
+    const golfResourceId = String(golfResource.resourceId);
+    const capacity = Math.max(1, Number(golfResource.quantity) || 4);
+
     // WiseGolf rows represent occupied/blocked capacity for the tee time.
-    // Count only normal golf reservation rows (res_golf) for the course resource.
+    // Count only normal golf reservation rows (res_golf) for the detected course resource.
     const occupied = new Map();
     for (const row of rows) {
       if (row?.label !== "res_golf") continue;
 
       const resources = Array.isArray(row?.resources) ? row.resources : [];
       const belongsToCourse = resources.some(
-        r => String(r?.resourceId) === "1"
+        r => String(r?.resourceId) === golfResourceId
       );
       if (!belongsToCourse) continue;
 
@@ -95,8 +109,8 @@ export default async function handler(req, res) {
       const h = String(Math.floor(minute / 60)).padStart(2, "0");
       const m = String(minute % 60).padStart(2, "0");
       const time = `${h}:${m}`;
-      const used = Math.min(4, occupied.get(time) || 0);
-      const free = Math.max(0, 4 - used);
+      const used = Math.min(capacity, occupied.get(time) || 0);
+      const free = Math.max(0, capacity - used);
 
       if (time >= from && time <= to && free >= playersNeeded) {
         teeTimes.push({ time, occupied: used, free });
@@ -106,13 +120,14 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      test: "availability-rows-v2",
+      test: "availability-auto-resource-v3",
       courseId,
       course: course.name,
       date,
       from,
       to,
       players: playersNeeded,
+      resource: { resourceId: golfResource.resourceId, resourceName: golfResource.resourceName, capacity },
       schedule: { startTime, endTime, duration },
       teeTimes
     });
