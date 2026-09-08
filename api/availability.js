@@ -82,20 +82,38 @@ async function fetchAvailability(courseId, course, date, from, to, playersNeeded
 
       const occupied = new Map();
 
-      for (const row of rows) {
-        if (row?.label !== "res_golf") continue;
+      if (courseId === "shg") {
+        // SHG shares one product between Luukki and Lakisto. Its rows can contain
+        // non-player golf reservations, so player capacity must be calculated
+        // from actual reservationsGolfPlayers entries for each resource.
+        const players = Array.isArray(reservations?.reservationsGolfPlayers)
+          ? reservations.reservationsGolfPlayers
+          : [];
 
-        const rowResources = Array.isArray(row?.resources) ? row.resources : [];
-        const belongsToCourse = rowResources.some(
-          r => String(r?.resourceId) === golfResourceId
-        );
-        if (!belongsToCourse) continue;
+        for (const player of players) {
+          if (String(player?.resourceId) !== golfResourceId) continue;
 
-        const t = hhmm(row.start);
-        if (!t) continue;
+          const t = hhmm(player.dateTimeStart);
+          if (!t) continue;
 
-        const qty = Math.max(1, Number(row.quantity) || 1);
-        occupied.set(t, (occupied.get(t) || 0) + qty);
+          occupied.set(t, (occupied.get(t) || 0) + 1);
+        }
+      } else {
+        for (const row of rows) {
+          if (row?.label !== "res_golf") continue;
+
+          const rowResources = Array.isArray(row?.resources) ? row.resources : [];
+          const belongsToCourse = rowResources.some(
+            r => String(r?.resourceId) === golfResourceId
+          );
+          if (!belongsToCourse) continue;
+
+          const t = hhmm(row.start);
+          if (!t) continue;
+
+          const qty = Math.max(1, Number(row.quantity) || 1);
+          occupied.set(t, (occupied.get(t) || 0) + qty);
+        }
       }
 
       const [sh, sm] = startTime.split(":").map(Number);
@@ -185,7 +203,7 @@ export default async function handler(req, res) {
 
   res.status(200).json({
     ok: true,
-    version: "availability-v1",
+    version: "availability-v2-shg-players",
     date,
     from,
     to,
