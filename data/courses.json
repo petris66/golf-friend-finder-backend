@@ -128,5 +128,50 @@
     "name": "SHG 18r",
     "productId": "53",
     "api": "https://api.shg.fi"
+  },
+  "ringside": {
+    "name": "Espoo Ringside Golf 18r",
+    "productId": "17",
+    "api": "https://api.ringsidegolf.fi"
+  },
+  "nokia_rock": {
+    "name": "Nokia River Golf – Rock",
+    "productId": "88",
+    "api": "https://api.nokiarivergolf.fi"
+  },
+  "nokia_river": {
+    "name": "Nokia River Golf – River",
+    "productId": "89",
+    "api": "https://api.nokiarivergolf.fi"
+  },
+  "lakeside_jarvenranta": {
+    "name": "Lakeside Golf Vammala – Järvenranta",
+    "productId": "41",
+    "api": "https://api.lakesidegolf.fi"
+  },
+  "lakeside_pirunpelto": {
+    "name": "Lakeside Golf Vammala – Pirunpelto",
+    "productId": "42",
+    "api": "https://api.lakesidegolf.fi"
+  },
+  "tammer": {
+    "name": "Tammer-Golf 18r",
+    "productId": "120",
+    "api": "https://api.tammer-golf.fi"
+  },
+  "linna": {
+    "name": "Linna Golf – Vanajanlinna",
+    "productId": "10",
+    "api": "https://api.linnagolf.fi"
+  },
+  "vierumaki_classic": {
+    "name": "Vierumäki Golf – Classic",
+    "productId": "455",
+    "api": "https://api.vierumakigolf.fi"
+  },
+  "vierumaki_cooke": {
+    "name": "Vierumäki Golf – Cooke",
+    "productId": "456",
+    "api": "https://api.vierumakigolf.fi"
   }
 }
